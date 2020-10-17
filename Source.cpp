@@ -54,7 +54,7 @@ private:
 	string name;
 	string surname;
 	double budget;
-	Produkt bought_products[25];
+	Produkt bought_products[25]; // skusit pouzit iba int array???
 
 public:
 	Zakaznik();
@@ -90,6 +90,50 @@ Zakaznik::Zakaznik(string name, string surname, double budget)
 bool Zakaznik::createReceipt(string filename)
 {
 	return false;
+}
+
+class Eshop
+{
+private:
+	Produkt* produkty;
+	string getProductsFrom;
+public:
+	Eshop(string filename) { this->getProductsFrom = filename; }
+	bool getProductsFromFile();
+
+	Produkt* searchByName(string searchedWord);
+	Produkt* searchByProducer(string searchedWord);
+
+	void printInfo(int ID);
+	void changeQuantityOfProduct(int ID);
+
+};
+
+bool Eshop::getProductsFromFile()
+{
+
+	return false;
+}
+
+Produkt* Eshop::searchByName(string searchedWord)
+{
+
+}
+
+Produkt* Eshop::searchByProducer(string searchedWord)
+{
+
+
+}
+
+void Eshop::printInfo(int ID)
+{
+
+}
+
+void Eshop::changeQuantityOfProduct(int ID)
+{
+
 }
 
 
