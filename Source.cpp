@@ -148,7 +148,7 @@ public:
 	Produkt* searchByProducer(string searchedWord);
 
 	void printQuantityAndPriceByID(int ID);
-	void decreaseQuantityOfProduct(int ID);
+	void productBought(int ID);
 	void changeNumberOfProducts(int newNumberOfProducts) { numberOfProducts = newNumberOfProducts; }
 	void printAllProducts();
 	
@@ -220,7 +220,7 @@ void Eshop::printAllProducts()
 	}
 }
 
-void Eshop::decreaseQuantityOfProduct(int ID)
+void Eshop::productBought(int ID)
 {
 	produkty[ID - 1].changeQuantity(produkty[ID - 1].getQuantity() - 1);
 
