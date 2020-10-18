@@ -78,7 +78,7 @@ Zakaznik::Zakaznik()
 	this->name = "N/A";
 	this->surname = "N/A";
 	this->budget = 0.0;
-}
+} // done
 
 Zakaznik::Zakaznik(string name, string surname, double budget)
 {
