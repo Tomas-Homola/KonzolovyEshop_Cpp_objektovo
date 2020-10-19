@@ -137,8 +137,8 @@ class Eshop
 private:
 	string getProductsFrom;
 	int numberOfProducts;
-public:
 	Produkt* produkty;
+public:
 	Eshop(string filename) { this->getProductsFrom = filename; }
 	bool getProductsFromFile();
 	string getFileName() { return getProductsFrom; }
@@ -146,6 +146,7 @@ public:
 
 	Produkt* searchByName(string searchedWord);
 	Produkt* searchByProducer(string searchedWord);
+	Produkt* returnProducts() { return produkty; } // funkcia, co vrati adresu, kde su ulozene produkty
 
 	void printQuantityAndPriceByID(int ID);
 	void productBought(int ID);
@@ -218,7 +219,7 @@ void Eshop::printAllProducts()
 	{
 		cout << "ID: " << produkty[i].getID() << ", nazov: " << produkty[i].getName() << ", vyrobca: " << produkty[i].getProducer() << ", pocet: " << produkty[i].getQuantity() << ", cena: " << produkty[i].getPrice() << endl;
 	}
-}
+} // asi done
 
 void Eshop::productBought(int ID)
 {
@@ -241,7 +242,7 @@ int main()
 	
 	Eshop obchod("produkty.txt");
 	obchod.getProductsFromFile();
-	//obchod.printAllProducts();
+	obchod.printAllProducts();
 
 	zakaznik.createReceipt();
 
