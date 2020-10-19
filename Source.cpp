@@ -58,7 +58,7 @@ private:
 	string name;
 	string surname;
 	double budget;
-	Produkt boughtProducts[25]; // skusit pouzit iba int array???
+	int boughtProducts[25]; // skusit pouzit iba int array???
 	int productCount; // pocet kupenych produktov
 
 public:
@@ -68,14 +68,14 @@ public:
 	string getName() { return name; } // funkcia na vratenie mena
 	string getSurname() { return surname; } // funkcia na vratenie priezviska
 	double getBudget() { return budget; } // funkcia na vratenie rozpoctu
-	Produkt* getProductByID(int ID) { return &boughtProducts[ID]; } // funkcia na vratenie adresy produktu z kosika
+	int* getProductByID(int ID) { return &boughtProducts[ID]; } // funkcia na vratenie adresy produktu z kosika
 
-	bool createReceipt(); // funkcia na vytvorenie vystupneho suboru s vypisanim kupenych produktov
+	bool createReceipt(Produkt* products); // funkcia na vytvorenie vystupneho suboru s vypisanim kupenych produktov
 
 	void changeName(string newName) { name = newName; } // zmena mena
 	void changeSurname(string newSurname) { surname = newSurname; } // zmena priezviska
 	void addToBudget(double addedSum) { budget += addedSum; } // pridanie penazi do rozpoctu
-	void buyProduct(Produkt* chosenProduct); // pridanie produktu do kosika
+	void buyProduct(int ID); // pridanie produktu do kosika
 	void printCustomerInfo(); // vypisat info o zakaznikovi
 
 };
@@ -96,7 +96,7 @@ Zakaznik::Zakaznik(string name, string surname, double budget)
 	this->productCount = 0;
 } //done
 
-bool Zakaznik::createReceipt()
+bool Zakaznik::createReceipt(Produkt* products)
 {
 	fstream blocik;
 
@@ -111,7 +111,7 @@ bool Zakaznik::createReceipt()
 
 	for (int i = 0; i < productCount; i++)
 	{
-		blocik << "1x " << boughtProducts[i].getName() << ", price: " << boughtProducts[i].getPrice() << " EUR" << endl;
+		blocik << "1x " << products[boughtProducts[i] - 1].getName() << ", price: " << products[boughtProducts[i] - 1].getPrice() << " EUR" << endl;
 	}
 
 	blocik.close();
@@ -120,9 +120,11 @@ bool Zakaznik::createReceipt()
 	return true;
 } // asi done
 
-void Zakaznik::buyProduct(Produkt* chosenProduct)
+void Zakaznik::buyProduct(int ID)
 {
-
+	boughtProducts[productCount] = ID;
+	
+	productCount++;
 }
 
 void Zakaznik::printCustomerInfo()
@@ -137,22 +139,27 @@ class Eshop
 private:
 	string getProductsFrom;
 	int numberOfProducts;
+	int numOfFoundProducts;
 	Produkt* produkty;
 public:
 	Eshop(string filename) { this->getProductsFrom = filename; }
 	bool getProductsFromFile();
 	string getFileName() { return getProductsFrom; }
 	int getNumberOfProducts() { return numberOfProducts; }
+	int getNumOfFoundProducts() { return numOfFoundProducts; }
 
-	Produkt* searchByName(string searchedWord);
-	Produkt* searchByProducer(string searchedWord);
+	int* searchByName(string searchedWord);
+	int* searchByProducer(string searchedWord);
 	Produkt* returnProducts() { return produkty; } // funkcia, co vrati adresu, kde su ulozene produkty
 
 	void printQuantityAndPriceByID(int ID);
 	void productBought(int ID);
 	void changeNumberOfProducts(int newNumberOfProducts) { numberOfProducts = newNumberOfProducts; }
 	void printAllProducts();
+	void printFoundProducts(int* foundProducts);
 	
+	void changeNumOfFoundProducts(int newNum) { numOfFoundProducts = newNum; }
+	void increaseNumOfFoundProducts(int increaseBy) { numOfFoundProducts += increaseBy; }
 };
 
 bool Eshop::getProductsFromFile()
@@ -191,22 +198,55 @@ bool Eshop::getProductsFromFile()
 	return true;
 }
 
-/*Produkt* Eshop::searchByName(string searchedWord)
+int* Eshop::searchByName(string searchedWord)
 {
 	// vratit to ma smernik na dynamicky alokovane pole, kde sa ulozia najdene produkty 
-	Produkt* foundProducts;
+	int* foundProducts;
+	foundProducts = new int[getNumberOfProducts()];
+
+	changeNumOfFoundProducts(0);
+
+	searchedWord = str_to_lwr(searchedWord); // zmena pismen zadaneho stringu na male pismena
+
+	for (int i = 0; i < numberOfProducts; i++)
+	{
+		if (produkty[i].getName().find(searchedWord) != -1)
+		{
+			foundProducts[getNumOfFoundProducts()] = produkty[i].getID();
+			increaseNumOfFoundProducts(1);
+		}
+	}
+
+	if (getNumOfFoundProducts() == 0)
+		return NULL;
 
 	return foundProducts;
-
 }
 
-Produkt* Eshop::searchByProducer(string searchedWord)
+int* Eshop::searchByProducer(string searchedWord)
 {
 	// vratit to ma smernik na dynamicky alokovane pole, kde sa ulozia najdene produkty 
-	Produkt* foundProducts;
+	int* foundProducts;
+	foundProducts = new int[getNumberOfProducts()];
+	
+	changeNumOfFoundProducts(0);
+	
+	searchedWord = str_to_upr(searchedWord); // zmena pismen zadaneho stringu na male pismena
+
+	for (int i = 0; i < numberOfProducts; i++)
+	{
+		if (produkty[i].getProducer().find(searchedWord) != -1)
+		{
+			foundProducts[getNumOfFoundProducts()] = produkty[i].getID();
+			increaseNumOfFoundProducts(1);
+		}
+	}
+	
+	if ( getNumOfFoundProducts() == 0)
+		return NULL;
 	
 	return foundProducts;
-}*/
+}
 
 void Eshop::printQuantityAndPriceByID(int ID)
 {
@@ -215,9 +255,11 @@ void Eshop::printQuantityAndPriceByID(int ID)
 
 void Eshop::printAllProducts()
 {
+	cout << setw(2) << "ID" << setw(17) << "Name" << setw(12) << "Producer" << setw(12) << "Quantity" << setw(17) << "Price in EUR" << endl;
+	
 	for (int i = 0; i < getNumberOfProducts(); i++)
 	{
-		cout << "ID: " << produkty[i].getID() << ", nazov: " << produkty[i].getName() << ", vyrobca: " << produkty[i].getProducer() << ", pocet: " << produkty[i].getQuantity() << ", cena: " << produkty[i].getPrice() << endl;
+		cout << setw(2) << produkty[i].getID() << setw(17) << produkty[i].getName() << setw(12) << produkty[i].getProducer() << setw(12) << produkty[i].getQuantity() << setw(17) << produkty[i].getPrice() << endl;
 	}
 } // asi done
 
@@ -229,22 +271,59 @@ void Eshop::productBought(int ID)
 		produkty[ID - 1].changeQuantity(0);
 } // asi done
 
-//################################################################################//
+void Eshop::printFoundProducts(int* foundProducts)
+{
+	cout << "Found products:" << endl;
+	cout << setw(2) << "ID" << setw(17) << "Name" << setw(12) << "Producer" << setw(12) << "Quantity" << setw(17) << "Price in EUR" << endl; // vypis prveho riadku tabulky
+
+	for (int i = 0; i < getNumOfFoundProducts(); i++)
+	{
+		cout << setw(2) << produkty[foundProducts[i] - 1].getID() << setw(17) << produkty[foundProducts[i] - 1].getName() << setw(12) << produkty[foundProducts[i] - 1].getProducer() << setw(12) << produkty[foundProducts[i] - 1].getQuantity() << setw(17) << produkty[foundProducts[i] - 1].getPrice() << endl;
+	}
+}
+ 
+  //################################################################################//
 
 int main()
 {
 	string name = "Tomas";
 	string surname = "Homola";
 	double budget = 55.5;
+	Produkt* produkty;
+	int* foundProducts;
+	string searchedWord;
 
 	Zakaznik zakaznik(name, surname, budget);
-	zakaznik.printCustomerInfo();
-	
+	//zakaznik.printCustomerInfo();
+
 	Eshop obchod("produkty.txt");
 	obchod.getProductsFromFile();
 	obchod.printAllProducts();
+	produkty = obchod.returnProducts();
 
-	zakaznik.createReceipt();
+	cout << "Search by?" << endl;
+	cin >> searchedWord;
+
+	foundProducts = obchod.searchByProducer(searchedWord);
+	
+	cout << "\n\n";
+
+	obchod.printFoundProducts(foundProducts);
+
+	cout << "\n\n";
+
+	cout << "Search by?" << endl;
+	cin >> searchedWord;
+
+	foundProducts = obchod.searchByName(searchedWord);
+
+	cout << "\n\n";
+
+	obchod.printFoundProducts(foundProducts);
+	
+	delete[] foundProducts;
+
+
 
 	return 0;
 }
