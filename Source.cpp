@@ -273,13 +273,23 @@ void Eshop::productBought(int ID)
 
 void Eshop::printFoundProducts(int* foundProducts)
 {
-	cout << "Found products:" << endl;
-	cout << setw(2) << "ID" << setw(17) << "Name" << setw(12) << "Producer" << setw(12) << "Quantity" << setw(17) << "Price in EUR" << endl; // vypis prveho riadku tabulky
-
-	for (int i = 0; i < getNumOfFoundProducts(); i++)
+	if (foundProducts == NULL)
 	{
-		cout << setw(2) << produkty[foundProducts[i] - 1].getID() << setw(17) << produkty[foundProducts[i] - 1].getName() << setw(12) << produkty[foundProducts[i] - 1].getProducer() << setw(12) << produkty[foundProducts[i] - 1].getQuantity() << setw(17) << produkty[foundProducts[i] - 1].getPrice() << endl;
+		cout << "Nothing found" << endl;
 	}
+	else
+	{
+		cout << "Found products:" << endl;
+		cout << setw(2) << "ID" << setw(17) << "Name" << setw(12) << "Producer" << setw(12) << "Quantity" << setw(17) << "Price in EUR" << endl; // vypis prveho riadku tabulky
+
+		for (int i = 0; i < getNumOfFoundProducts(); i++)
+		{
+			cout << setw(2) << produkty[foundProducts[i] - 1].getID() << setw(17) << produkty[foundProducts[i] - 1].getName() << setw(12) << produkty[foundProducts[i] - 1].getProducer() << setw(12) << produkty[foundProducts[i] - 1].getQuantity() << setw(17) << produkty[foundProducts[i] - 1].getPrice() << endl;
+		}
+
+	}
+	
+	
 }
  
   //################################################################################//
@@ -290,36 +300,46 @@ int main()
 	string surname = "Homola";
 	double budget = 55.5;
 	Produkt* produkty;
-	int* foundProducts;
+	int* foundProducts = NULL;
 	string searchedWord;
 
 	Zakaznik zakaznik(name, surname, budget);
-	//zakaznik.printCustomerInfo();
+	zakaznik.printCustomerInfo();
 
 	Eshop obchod("produkty.txt");
 	obchod.getProductsFromFile();
-	obchod.printAllProducts();
+	//obchod.printAllProducts();
 	produkty = obchod.returnProducts();
 
-	cout << "Search by?" << endl;
-	cin >> searchedWord;
+	int choice = 0;
 
-	foundProducts = obchod.searchByProducer(searchedWord);
+	do
+	{
+		cout << "Welcome " << zakaznik.getName() << "!\n1 - for search by name\n2 - search by producer\n0 - exit" << endl;
+		cin >> choice;
+
+		if (choice == 1)
+		{
+			cout << "Search by:" << endl;
+			cin >> searchedWord;
+
+			foundProducts = obchod.searchByName(searchedWord);
+			obchod.printFoundProducts(foundProducts);
+			cout << "\n\n";
+		}
+		else if (choice == 2)
+		{
+			cout << "Search by:" << endl;
+			cin >> searchedWord;
+
+			foundProducts = obchod.searchByProducer(searchedWord);
+			obchod.printFoundProducts(foundProducts);
+			cout << "\n\n";
+		}
+
+	} while (choice != 0);
 	
-	cout << "\n\n";
-
-	obchod.printFoundProducts(foundProducts);
-
-	cout << "\n\n";
-
-	cout << "Search by?" << endl;
-	cin >> searchedWord;
-
-	foundProducts = obchod.searchByName(searchedWord);
-
-	cout << "\n\n";
-
-	obchod.printFoundProducts(foundProducts);
+	cout << "Dakujeme za nakup" << endl;
 	
 	delete[] foundProducts;
 
