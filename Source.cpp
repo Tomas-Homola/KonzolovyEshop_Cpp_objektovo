@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <string>
 #include <fstream>
-#include "strUpr_strLwr.h"
+#include "strUpr_strLwr.h" // funkcie pre prepisanie pismen nejakeho stringu na bud vsetky male alebo velke
 
 using namespace std;
 
@@ -24,11 +24,11 @@ public:
 	int getQuantity() { return quantity; } // funkcia na vratenie mnozstva na sklade
 	double getPrice() { return price; } // funkcia na vratenie ceny produktu
 
-	void changeID(int newID) { ID = newID; } // funkcia na zmenu ID produktu
-	void changeName(string newName) { name = newName; } // funkcia na zmenu nazvu produktu
-	void changeProducer(string newProducer) { producer = newProducer; } // funkcia na zmenu vyrobcu produktu
-	void changeQuantity(int newQuantity) { quantity = newQuantity; } // funkcia na zmenu mnozstva na sklade
-	void changePrice(double newPrice) { price = newPrice; } // funkcia na zmenu ceny produktu
+	void changeID(int newID) { this->ID = newID; } // funkcia na zmenu ID produktu
+	void changeName(string newName) { this->name = newName; } // funkcia na zmenu nazvu produktu
+	void changeProducer(string newProducer) { this->producer = newProducer; } // funkcia na zmenu vyrobcu produktu
+	void changeQuantity(int newQuantity) { this->quantity = newQuantity; } // funkcia na zmenu mnozstva na sklade
+	void changePrice(double newPrice) { this->price = newPrice; } // funkcia na zmenu ceny produktu
 
 };
 
@@ -115,7 +115,7 @@ bool Zakaznik::createReceipt(Produkt* products)
 	}
 
 	blocik.close();
-	cout << "Dakujeme za nakup" << endl;
+	cout << "Thank you for you visit" << endl;
 
 	return true;
 } // asi done
@@ -175,7 +175,6 @@ bool Eshop::getProductsFromFile()
 	
 	fromFile >> tempInt;
 	changeNumberOfProducts(tempInt);
-	tempInt = 0;
 
 	produkty = new Produkt[getNumberOfProducts()];
 
@@ -250,7 +249,7 @@ int* Eshop::searchByProducer(string searchedWord)
 
 void Eshop::printQuantityAndPriceByID(int ID)
 {
-	cout << "Quantity of selected product: " << produkty[ID - 1].getQuantity() << "\nPrice for selected product: " << produkty[ID - 1].getPrice() << " EUR" << endl;
+	cout << "\nQuantity of selected product: " << produkty[ID - 1].getQuantity() << "x\n\nPrice for selected product: " << produkty[ID - 1].getPrice() << " EUR\n" << endl;
 } // asi done
 
 void Eshop::printAllProducts()
@@ -293,28 +292,33 @@ void Eshop::printFoundProducts(int* foundProducts)
 
 int main()
 {
-	string name = "Tomas", surname = "Homola"; // meno a priezvisko zakaznika
-	string searchedWord = ""; // premenna na hladany vyraz
+	string name, surname; // meno a priezvisko zakaznika
+	string searchedWord; // premenna na hladany vyraz
 	
-	double budget = 5.99; // rozpocet zakaznika
+	double budget = 0.0; // rozpocet zakaznika
 	int choice = 0; // premenna na zistenie volby
 	int chosenID = 0; // premenna pre vybrane ID produktu
-	int bought = 0;
+	int bought = 0; // premenna, ci zakaznik chce alebo nechce kupit vybrany produkt
 	int* foundProducts = NULL; // smernik na pole najdenych produktov
 
-	bool started = true; // bool, aby to cele bezalo
-	
+	Produkt* allProducts = NULL;
 
 	Eshop eshop("produkty.txt");
-	eshop.getProductsFromFile();
-	Produkt* allProducts = eshop.returnProducts();
 	
-	/*cout << "Vitajte v eshope!\nZadajte Vase meno:" << endl;
+	if (!eshop.getProductsFromFile())
+	{
+		cout << "Data not found" << endl;
+		exit(-1);
+	}
+	
+	allProducts = eshop.returnProducts();
+	
+	cout << "Vitajte v eshope!\nZadajte Vase meno:" << endl;
 	cin >> name;
 	cout << "\nZadajte Vase priezvisko:" << endl;
 	cin >> surname;
 	cout << "\nZadajte Vas rozpocet:" << endl;
-	cin >> budget;*/
+	cin >> budget;
 
 	Zakaznik customer(name, surname, budget);
 	customer.printCustomerInfo();
@@ -326,12 +330,12 @@ int main()
 			cin.clear();
 			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			
-			cout << "Choose an option:\n1 -> search by name\n2 -> search by producer\n3 -> finish shopping" << endl;
+			cout << "\nChoose an option:\n1 -> search by name\n2 -> search by producer\n3 -> finish shopping" << endl;
 
 			cin >> choice;
-			if (choice == 1 || choice == 2 || choice == 3)
+			if (choice == 1 || choice == 2 || choice == 3) // ak je spravne zadane, tak pokracuje dalej
 				break;
-			else
+			else // ak nie je, tak si to pyta znovu
 			{
 				cout << "\nChoose a correct option" << endl;
 				continue;
@@ -343,8 +347,8 @@ int main()
 			cout << "Search by name:" << endl;
 			cin >> searchedWord;
 
-			foundProducts = eshop.searchByName(searchedWord);
-			eshop.printFoundProducts(foundProducts);
+			foundProducts = eshop.searchByName(searchedWord); // funkcia na hladanie
+			eshop.printFoundProducts(foundProducts); // vypisanie najdenych produktov
 
 			cout << "Choose product by its ID" << endl;
 			cin >> chosenID;
@@ -389,13 +393,13 @@ int main()
 					break;
 			} while (bought > 1 || bought < 0);
 
-			if (bought == 1)
+			if (bought == 1) // ak si chce zakaznik kupit produkt
 			{
 				if (customer.getBudget() >= allProducts[chosenID - 1].getPrice()) // kontrola pre dostatok penazi na kupu produktu
 				{
-					customer.buyProduct(chosenID);
-					customer.removeFromBudget(allProducts[chosenID - 1].getPrice());
-					cout << "Product bought\nRemaining budget: " << customer.getBudget() << " EUR" << endl;
+					customer.buyProduct(chosenID); // ulozenie ID kupeneho produktu
+					customer.removeFromBudget(allProducts[chosenID - 1].getPrice()); // odcitanie ceny produktu od rozpoctu zakaznika
+					cout << "Product bought\nRemaining budget: " << customer.getBudget() << " EUR" << endl; // vypisanie zostavajuceho rozpoctu
 				}
 				else
 					cout << "Not enough money to buy selected product" << endl;
@@ -409,8 +413,8 @@ int main()
 			cout << "Search by producer:" << endl;
 			cin >> searchedWord;
 
-			foundProducts = eshop.searchByProducer(searchedWord);
-			eshop.printFoundProducts(foundProducts);
+			foundProducts = eshop.searchByProducer(searchedWord); // funkcia na hladanie
+			eshop.printFoundProducts(foundProducts); // vypisanie najdenych produktov
 
 			cout << "Choose product by its ID" << endl;
 			cin >> chosenID;
@@ -469,13 +473,20 @@ int main()
 
 			delete[] foundProducts;
 		}
-		else if (choice == 3)
+		else if (choice == 3) // ak chce zakaznik koniec nakupu, tak sa vyskoci von z cyklu a pokracuje dalej na vytvorenie blociku
 			break;
 
-	} while (started);
+	} while (true);
 	
 	cout << "\nEnd of shopping" << endl;
-	customer.createReceipt(allProducts); // vytvorenie blociku od nakupu
+
+	if (!customer.createReceipt(allProducts))
+	{
+		cout << "Error with receipt creation" << endl;
+		delete[] allProducts;
+		exit(-1);
+	}
+	
 	delete[] allProducts; // dealokacia pamate pre produkty
 
 	return 0;
