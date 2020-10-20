@@ -74,7 +74,7 @@ public:
 
 	void changeName(string newName) { name = newName; } // zmena mena
 	void changeSurname(string newSurname) { surname = newSurname; } // zmena priezviska
-	void addToBudget(double addedSum) { budget += addedSum; } // pridanie penazi do rozpoctu
+	void removeFromBudget(double productPrice) { budget -= productPrice; } // pridanie penazi do rozpoctu
 	void buyProduct(int ID); // pridanie produktu do kosika
 	void printCustomerInfo(); // vypisat info o zakaznikovi
 
@@ -250,7 +250,7 @@ int* Eshop::searchByProducer(string searchedWord)
 
 void Eshop::printQuantityAndPriceByID(int ID)
 {
-	cout << "Quantity of selected product: " << produkty[ID - 1].getQuantity() << ", Price for selected product: " << produkty[ID - 1].getPrice() << " EUR" << endl;
+	cout << "Quantity of selected product: " << produkty[ID - 1].getQuantity() << "\nPrice for selected product: " << produkty[ID - 1].getPrice() << " EUR" << endl;
 } // asi done
 
 void Eshop::printAllProducts()
@@ -280,50 +280,26 @@ void Eshop::printFoundProducts(int* foundProducts)
 	else
 	{
 		cout << "Found products:" << endl;
-		cout << setw(2) << "ID" << setw(17) << "Name" << setw(12) << "Producer" << setw(12) << "Quantity" << setw(17) << "Price in EUR" << endl; // vypis prveho riadku tabulky
+		cout << setw(2) << "ID" << setw(17) << "Name" << setw(12) << "Producer" << endl; // vypis prveho riadku tabulky
 
 		for (int i = 0; i < getNumOfFoundProducts(); i++)
 		{
-			cout << setw(2) << produkty[foundProducts[i] - 1].getID() << setw(17) << produkty[foundProducts[i] - 1].getName() << setw(12) << produkty[foundProducts[i] - 1].getProducer() << setw(12) << produkty[foundProducts[i] - 1].getQuantity() << setw(17) << produkty[foundProducts[i] - 1].getPrice() << endl;
+			cout << setw(2) << produkty[foundProducts[i] - 1].getID() << setw(17) << produkty[foundProducts[i] - 1].getName() << setw(12) << produkty[foundProducts[i] - 1].getProducer() << endl;
 		}
-
 	}
-	
-	
 }
  
   //################################################################################//
-
-void mainPage(Eshop* eshop, Zakaznik* customer)
-{
-	int choice = 0;
-	string searchedWord;
-	Produkt* allProducts = eshop->returnProducts();
-
-	do
-	{
-		cout << "Choose an option:\n1 -> search by name\n2 -> search by producer\n3 -> finish shopping" << endl;
-
-		cin.clear();
-		cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-		cin >> choice;
-		if (choice > 3 || choice < 1)
-			cout << "Choose a correct option" << endl;
-
-	} while (choice > 3 || choice < 1);
-
-
-}
 
 int main()
 {
 	string name = "Tomas", surname = "Homola"; // meno a priezvisko zakaznika
 	string searchedWord = ""; // premenna na hladany vyraz
 	
-	double budget = 40.99; // rozpocet zakaznika
+	double budget = 5.99; // rozpocet zakaznika
 	int choice = 0; // premenna na zistenie volby
 	int chosenID = 0; // premenna pre vybrane ID produktu
+	int bought = 0;
 	int* foundProducts = NULL; // smernik na pole najdenych produktov
 
 	bool started = true; // bool, aby to cele bezalo
@@ -345,7 +321,7 @@ int main()
 
 	do
 	{
-		do
+		do // kontrola pre spravne zadanu moznost 1, 2 alebo 3
 		{
 			cin.clear();
 			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -373,11 +349,13 @@ int main()
 			cout << "Choose product by its ID" << endl;
 			cin >> chosenID;
 
-			do
+			do // kontrola pre spravne zadane ID, este to skusit prerobit tak, aby to kontrolovalo iba z ID najdenych produktov
 			{
 				if (chosenID < 1 || chosenID > eshop.getNumberOfProducts())
 				{
 					cout << "Choose a correct ID" << endl;
+					cin.clear();
+					cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 					cin >> chosenID;
 					continue;
 				}
@@ -385,7 +363,45 @@ int main()
 					break;
 			} while (chosenID < 1 || chosenID > eshop.getNumberOfProducts());
 
-			customer.buyProduct(chosenID);
+			if (allProducts[chosenID - 1].getQuantity() == 0) // ak nie je produkt na sklade, vymazu sa dealokuju sa najdene pordukty a ide sa naspat na zaciatok
+			{
+				cout << "Product is not available" << endl;
+				delete[] foundProducts;
+				continue;
+			}
+			else // ak je produkt na sklade, tak vypise o nom uz iba pocet kusov a cenu
+				eshop.printQuantityAndPriceByID(chosenID);
+			
+			cout << "1 -> to buy selected product\n0 -> back to main page" << endl;
+			cin >> bought;
+
+			do // kontrola pre spravne zadanu moznost 1/0
+			{
+				if (bought > 1 || bought < 0)
+				{
+					cout << "Choose a correct option" << endl;
+					cin.clear();
+					cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+					cin >> bought;
+					continue;
+				}
+				else if (bought == 1 || bought == 0)
+					break;
+			} while (bought > 1 || bought < 0);
+
+			if (bought == 1)
+			{
+				if (customer.getBudget() >= allProducts[chosenID - 1].getPrice()) // kontrola pre dostatok penazi na kupu produktu
+				{
+					customer.buyProduct(chosenID);
+					customer.removeFromBudget(allProducts[chosenID - 1].getPrice());
+					cout << "Product bought\nRemaining budget: " << customer.getBudget() << " EUR" << endl;
+				}
+				else
+					cout << "Not enough money to buy selected product" << endl;
+			}
+
+			delete[] foundProducts;
 
 		}
 		else if (choice == 2) // vyhladavanie podla nazvu vyrobcu produktu
@@ -395,6 +411,63 @@ int main()
 
 			foundProducts = eshop.searchByProducer(searchedWord);
 			eshop.printFoundProducts(foundProducts);
+
+			cout << "Choose product by its ID" << endl;
+			cin >> chosenID;
+
+			do // kontrola pre spravne zadane ID, este to skusit prerobit tak, aby to kontrolovalo iba z ID najdenych produktov
+			{
+				if (chosenID < 1 || chosenID > eshop.getNumberOfProducts())
+				{
+					cout << "Choose a correct ID" << endl;
+					cin.clear();
+					cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+					cin >> chosenID;
+					continue;
+				}
+				else
+					break;
+			} while (chosenID < 1 || chosenID > eshop.getNumberOfProducts());
+
+			if (allProducts[chosenID - 1].getQuantity() == 0) // ak nie je produkt na sklade, vymazu sa dealokuju sa najdene pordukty a ide sa naspat na zaciatok
+			{
+				cout << "Product is not available" << endl;
+				delete[] foundProducts;
+				continue;
+			}
+			else // ak je produkt na sklade, tak vypise o nom uz iba pocet kusov a cenu
+				eshop.printQuantityAndPriceByID(chosenID);
+
+			cout << "1 -> to buy selected product\n0 -> back to main page" << endl;
+			cin >> bought;
+
+			do
+			{
+				if (bought > 1 || bought < 0)
+				{
+					cout << "Choose a correct option" << endl;
+					cin.clear();
+					cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+					cin >> bought;
+					continue;
+				}
+				else if (bought == 1 || bought == 0)
+					break;
+			} while (bought > 1 || bought < 0);
+
+			if (bought == 1)
+			{
+				if (customer.getBudget() >= allProducts[chosenID - 1].getPrice())
+				{
+					customer.buyProduct(chosenID);
+					customer.removeFromBudget(allProducts[chosenID - 1].getPrice());
+					cout << "Product bought\nRemaining budget: " << customer.getBudget() << " EUR" << endl;
+				}
+				else
+					cout << "Not enough money to buy selected product" << endl;
+			}
+
+			delete[] foundProducts;
 		}
 		else if (choice == 3)
 			break;
@@ -402,9 +475,9 @@ int main()
 	} while (started);
 	
 	cout << "\nEnd of shopping" << endl;
+	customer.createReceipt(allProducts); // vytvorenie blociku od nakupu
+	delete[] allProducts; // dealokacia pamate pre produkty
 
-
-	
 	return 0;
 }
 
