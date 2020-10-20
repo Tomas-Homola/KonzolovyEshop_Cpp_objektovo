@@ -294,57 +294,117 @@ void Eshop::printFoundProducts(int* foundProducts)
  
   //################################################################################//
 
-int main()
+void mainPage(Eshop* eshop, Zakaznik* customer)
 {
-	string name = "Tomas";
-	string surname = "Homola";
-	double budget = 55.5;
-	Produkt* produkty;
-	int* foundProducts = NULL;
-	string searchedWord;
-
-	Zakaznik zakaznik(name, surname, budget);
-	zakaznik.printCustomerInfo();
-
-	Eshop obchod("produkty.txt");
-	obchod.getProductsFromFile();
-	//obchod.printAllProducts();
-	produkty = obchod.returnProducts();
-
 	int choice = 0;
+	string searchedWord;
+	Produkt* allProducts = eshop->returnProducts();
 
 	do
 	{
-		cout << "Welcome " << zakaznik.getName() << "!\n1 - for search by name\n2 - search by producer\n0 - exit" << endl;
+		cout << "Choose an option:\n1 -> search by name\n2 -> search by producer\n3 -> finish shopping" << endl;
+
+		cin.clear();
+		cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
 		cin >> choice;
+		if (choice > 3 || choice < 1)
+			cout << "Choose a correct option" << endl;
 
-		if (choice == 1)
+	} while (choice > 3 || choice < 1);
+
+
+}
+
+int main()
+{
+	string name = "Tomas", surname = "Homola"; // meno a priezvisko zakaznika
+	string searchedWord = ""; // premenna na hladany vyraz
+	
+	double budget = 40.99; // rozpocet zakaznika
+	int choice = 0; // premenna na zistenie volby
+	int chosenID = 0; // premenna pre vybrane ID produktu
+	int* foundProducts = NULL; // smernik na pole najdenych produktov
+
+	bool started = true; // bool, aby to cele bezalo
+	
+
+	Eshop eshop("produkty.txt");
+	eshop.getProductsFromFile();
+	Produkt* allProducts = eshop.returnProducts();
+	
+	/*cout << "Vitajte v eshope!\nZadajte Vase meno:" << endl;
+	cin >> name;
+	cout << "\nZadajte Vase priezvisko:" << endl;
+	cin >> surname;
+	cout << "\nZadajte Vas rozpocet:" << endl;
+	cin >> budget;*/
+
+	Zakaznik customer(name, surname, budget);
+	customer.printCustomerInfo();
+
+	do
+	{
+		do
 		{
-			cout << "Search by:" << endl;
+			cin.clear();
+			cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			
+			cout << "Choose an option:\n1 -> search by name\n2 -> search by producer\n3 -> finish shopping" << endl;
+
+			cin >> choice;
+			if (choice == 1 || choice == 2 || choice == 3)
+				break;
+			else
+			{
+				cout << "\nChoose a correct option" << endl;
+				continue;
+			}
+		} while (choice > 3 || choice < 1);
+
+		if (choice == 1) // vyhladavanie podla mena produktu
+		{
+			cout << "Search by name:" << endl;
 			cin >> searchedWord;
 
-			foundProducts = obchod.searchByName(searchedWord);
-			obchod.printFoundProducts(foundProducts);
-			cout << "\n\n";
+			foundProducts = eshop.searchByName(searchedWord);
+			eshop.printFoundProducts(foundProducts);
+
+			cout << "Choose product by its ID" << endl;
+			cin >> chosenID;
+
+			do
+			{
+				if (chosenID < 1 || chosenID > eshop.getNumberOfProducts())
+				{
+					cout << "Choose a correct ID" << endl;
+					cin >> chosenID;
+					continue;
+				}
+				else
+					break;
+			} while (chosenID < 1 || chosenID > eshop.getNumberOfProducts());
+
+			customer.buyProduct(chosenID);
+
 		}
-		else if (choice == 2)
+		else if (choice == 2) // vyhladavanie podla nazvu vyrobcu produktu
 		{
-			cout << "Search by:" << endl;
+			cout << "Search by producer:" << endl;
 			cin >> searchedWord;
 
-			foundProducts = obchod.searchByProducer(searchedWord);
-			obchod.printFoundProducts(foundProducts);
-			cout << "\n\n";
+			foundProducts = eshop.searchByProducer(searchedWord);
+			eshop.printFoundProducts(foundProducts);
 		}
+		else if (choice == 3)
+			break;
 
-	} while (choice != 0);
+	} while (started);
 	
-	cout << "Dakujeme za nakup" << endl;
+	cout << "\nEnd of shopping" << endl;
+
+
 	
-	delete[] foundProducts;
-
-
-
 	return 0;
 }
 
