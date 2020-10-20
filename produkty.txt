@@ -1,0 +1,16 @@
+15
+1 pero_modre SIGNETTA 20 0.75
+2 pero_cervene SIGNETTA 20 0.75
+3 pero_zelene SIGNETTA 20 0.75
+4 ceruzka STABILO 15 1.59
+5 guma MAPED 0 0.89
+6 lepidlo PRITT 9 2.33
+7 plastelina CENTROPEN 10 1.03
+8 peracnik PENN 5 10.40
+9 ruksak SPINER 5 32.59
+10 kruzidlo MAPED 11 3.79
+11 struhadlo CONCORDE 6 0.68
+12 bielidlo PRITT 0 2.49
+13 vykresyA4_10ks DAFFER 10 0.49
+14 kriedy_biele DAFFER 9 9.19
+15 kriedy_farebne DAFFER 9 10.19
