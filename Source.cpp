@@ -24,11 +24,11 @@ public:
 	int getQuantity() { return quantity; } // funkcia na vratenie mnozstva na sklade
 	double getPrice() { return price; } // funkcia na vratenie ceny produktu
 
-	void changeID(int newID) { this->ID = newID; } // funkcia na zmenu ID produktu
-	void changeName(string newName) { this->name = newName; } // funkcia na zmenu nazvu produktu
-	void changeProducer(string newProducer) { this->producer = newProducer; } // funkcia na zmenu vyrobcu produktu
-	void changeQuantity(int newQuantity) { this->quantity = newQuantity; } // funkcia na zmenu mnozstva na sklade
-	void changePrice(double newPrice) { this->price = newPrice; } // funkcia na zmenu ceny produktu
+	void changeID(int newID) { ID = newID; } // funkcia na zmenu ID produktu
+	void changeName(string newName) { name = newName; } // funkcia na zmenu nazvu produktu
+	void changeProducer(string newProducer) { producer = newProducer; } // funkcia na zmenu vyrobcu produktu
+	void changeQuantity(int newQuantity) { quantity = newQuantity; } // funkcia na zmenu mnozstva na sklade
+	void changePrice(double newPrice) { price = newPrice; } // funkcia na zmenu ceny produktu
 
 };
 
@@ -58,7 +58,7 @@ private:
 	string name;
 	string surname;
 	double budget;
-	int boughtProducts[25]; // skusit pouzit iba int array???
+	int boughtProducts[25];
 	int productCount; // pocet kupenych produktov
 
 public:
@@ -68,7 +68,6 @@ public:
 	string getName() { return name; } // funkcia na vratenie mena
 	string getSurname() { return surname; } // funkcia na vratenie priezviska
 	double getBudget() { return budget; } // funkcia na vratenie rozpoctu
-	int* getProductByID(int ID) { return &boughtProducts[ID]; } // funkcia na vratenie adresy produktu z kosika
 
 	bool createReceipt(Produkt* products); // funkcia na vytvorenie vystupneho suboru s vypisanim kupenych produktov
 
@@ -86,7 +85,7 @@ Zakaznik::Zakaznik()
 	this->surname = "N/A";
 	this->budget = 0.0;
 	this->productCount = 0;
-} // done // done
+}
 
 Zakaznik::Zakaznik(string name, string surname, double budget)
 {
@@ -94,7 +93,7 @@ Zakaznik::Zakaznik(string name, string surname, double budget)
 	this->surname = surname;
 	this->budget = budget;
 	this->productCount = 0;
-} //done
+}
 
 bool Zakaznik::createReceipt(Produkt* products)
 {
@@ -118,7 +117,7 @@ bool Zakaznik::createReceipt(Produkt* products)
 	cout << "Thank you for you visit" << endl;
 
 	return true;
-} // asi done
+}
 
 void Zakaznik::buyProduct(int ID)
 {
@@ -143,20 +142,20 @@ private:
 	Produkt* produkty;
 public:
 	Eshop(string filename) { this->getProductsFrom = filename; }
-	bool getProductsFromFile();
-	string getFileName() { return getProductsFrom; }
-	int getNumberOfProducts() { return numberOfProducts; }
-	int getNumOfFoundProducts() { return numOfFoundProducts; }
+	bool getProductsFromFile(); // funkcia pre nacitanie produktov z txt suboru
+	string getFileName() { return getProductsFrom; } 
+	int getNumberOfProducts() { return numberOfProducts; } // funkcia vrati celkovy pocet produktov
+	int getNumOfFoundProducts() { return numOfFoundProducts; } // funkcia vrati pocet aktualne najdenych produktov pri hladani
 
-	int* searchByName(string searchedWord);
-	int* searchByProducer(string searchedWord);
+	int* searchByName(string searchedWord); // funkcia pre hladanie podla nazvu produktu
+	int* searchByProducer(string searchedWord); // funkcia pre hladanie podla nazvu vyrobcu produktu
 	Produkt* returnProducts() { return produkty; } // funkcia, co vrati adresu, kde su ulozene produkty
 
-	void printQuantityAndPriceByID(int ID);
-	void productBought(int ID);
+	void printQuantityAndPriceByID(int ID); // vypis mnozstva a cenu produktu podla zadaneho ID
+	void productBought(int ID); // ak sa produkt kupi, tato funkcia mu zmeni mnozstvo
 	void changeNumberOfProducts(int newNumberOfProducts) { numberOfProducts = newNumberOfProducts; }
-	void printAllProducts();
-	void printFoundProducts(int* foundProducts);
+	void printAllProducts(); // vypis vsetkych produktov
+	void printFoundProducts(int* foundProducts); // vypis najdenych produktov
 	
 	void changeNumOfFoundProducts(int newNum) { numOfFoundProducts = newNum; }
 	void increaseNumOfFoundProducts(int increaseBy) { numOfFoundProducts += increaseBy; }
@@ -174,11 +173,11 @@ bool Eshop::getProductsFromFile()
 		return false;
 	
 	fromFile >> tempInt;
-	changeNumberOfProducts(tempInt);
+	numberOfProducts = tempInt;
 
-	produkty = new Produkt[getNumberOfProducts()];
+	produkty = new Produkt[numberOfProducts];
 
-	for (int i = 0; i < getNumberOfProducts(); i++)
+	for (int i = 0; i < numberOfProducts; i++)
 	{
 		fromFile >> tempInt;
 		produkty[i].changeID(tempInt);
@@ -199,11 +198,10 @@ bool Eshop::getProductsFromFile()
 
 int* Eshop::searchByName(string searchedWord)
 {
-	// vratit to ma smernik na dynamicky alokovane pole, kde sa ulozia najdene produkty 
 	int* foundProducts;
-	foundProducts = new int[getNumberOfProducts()];
+	foundProducts = new int[numberOfProducts];
 
-	changeNumOfFoundProducts(0);
+	numOfFoundProducts = 0;
 
 	searchedWord = str_to_lwr(searchedWord); // zmena pismen zadaneho stringu na male pismena
 
@@ -211,24 +209,26 @@ int* Eshop::searchByName(string searchedWord)
 	{
 		if (produkty[i].getName().find(searchedWord) != -1)
 		{
-			foundProducts[getNumOfFoundProducts()] = produkty[i].getID();
-			increaseNumOfFoundProducts(1);
+			foundProducts[numOfFoundProducts] = produkty[i].getID();
+			numOfFoundProducts++;
 		}
 	}
 
-	if (getNumOfFoundProducts() == 0)
+	if (numOfFoundProducts == 0)
+	{
+		delete[] foundProducts;
 		return NULL;
-
-	return foundProducts;
+	}
+	else
+		return foundProducts;
 }
 
 int* Eshop::searchByProducer(string searchedWord)
 {
-	// vratit to ma smernik na dynamicky alokovane pole, kde sa ulozia najdene produkty 
 	int* foundProducts;
-	foundProducts = new int[getNumberOfProducts()];
+	foundProducts = new int[numberOfProducts];
 	
-	changeNumOfFoundProducts(0);
+	numOfFoundProducts = 0;
 	
 	searchedWord = str_to_upr(searchedWord); // zmena pismen zadaneho stringu na male pismena
 
@@ -236,21 +236,24 @@ int* Eshop::searchByProducer(string searchedWord)
 	{
 		if (produkty[i].getProducer().find(searchedWord) != -1)
 		{
-			foundProducts[getNumOfFoundProducts()] = produkty[i].getID();
-			increaseNumOfFoundProducts(1);
+			foundProducts[numOfFoundProducts] = produkty[i].getID();
+			numOfFoundProducts++;
 		}
 	}
 	
-	if ( getNumOfFoundProducts() == 0)
+	if (numOfFoundProducts == 0)
+	{
+		delete[] foundProducts;
 		return NULL;
-	
-	return foundProducts;
+	}
+	else
+		return foundProducts;
 }
 
 void Eshop::printQuantityAndPriceByID(int ID)
 {
 	cout << "\nQuantity of selected product: " << produkty[ID - 1].getQuantity() << "x\n\nPrice for selected product: " << produkty[ID - 1].getPrice() << " EUR\n" << endl;
-} // asi done
+}
 
 void Eshop::printAllProducts()
 {
@@ -260,7 +263,7 @@ void Eshop::printAllProducts()
 	{
 		cout << setw(2) << produkty[i].getID() << setw(17) << produkty[i].getName() << setw(12) << produkty[i].getProducer() << setw(12) << produkty[i].getQuantity() << setw(17) << produkty[i].getPrice() << endl;
 	}
-} // asi done
+}
 
 void Eshop::productBought(int ID)
 {
@@ -268,14 +271,12 @@ void Eshop::productBought(int ID)
 
 	if (produkty[ID - 1].getQuantity() < 0)
 		produkty[ID - 1].changeQuantity(0);
-} // asi done
+}
 
 void Eshop::printFoundProducts(int* foundProducts)
 {
 	if (foundProducts == NULL)
-	{
-		cout << "Nothing found" << endl;
-	}
+		cout << "No data available";
 	else
 	{
 		cout << "Found products:" << endl;
@@ -348,7 +349,13 @@ int main()
 			cin >> searchedWord;
 
 			foundProducts = eshop.searchByName(searchedWord); // funkcia na hladanie
-			eshop.printFoundProducts(foundProducts); // vypisanie najdenych produktov
+			if (foundProducts == NULL)
+			{
+				cout << "Nothing found" << endl; // ak sa nic nenaslo, tak navrat na hlavny vyber
+				continue;
+			}
+			else
+				eshop.printFoundProducts(foundProducts); // vypisanie najdenych produktov
 
 			cout << "Choose product by its ID" << endl;
 			cin >> chosenID;
@@ -406,6 +413,7 @@ int main()
 			}
 
 			delete[] foundProducts;
+			continue;
 
 		}
 		else if (choice == 2) // vyhladavanie podla nazvu vyrobcu produktu
@@ -414,7 +422,13 @@ int main()
 			cin >> searchedWord;
 
 			foundProducts = eshop.searchByProducer(searchedWord); // funkcia na hladanie
-			eshop.printFoundProducts(foundProducts); // vypisanie najdenych produktov
+			if (foundProducts == NULL)
+			{
+				cout << "Nothing found" << endl; // ak sa nic nenaslo, tak navrat na hlavny vyber
+				continue;
+			}
+			else
+				eshop.printFoundProducts(foundProducts); // vypisanie najdenych produktov
 
 			cout << "Choose product by its ID" << endl;
 			cin >> chosenID;
